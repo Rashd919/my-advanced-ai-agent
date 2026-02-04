@@ -1,16 +1,13 @@
 """
-🤖 الوكيل الذكي المتقدم - النسخة الاحترافية
-مع قدرات ذكية متقدمة وتنفيذ أوامر وتحليل متقدم
-بدون قيود - استخدام حر تماماً
+🤖 الوكيل الذكي المتقدم - النسخة الاحترافية الكاملة
+تصميم عصري احترافي + قدرات ذكية متقدمة + بدون قيود
 """
 
 import streamlit as st
 from datetime import datetime
 import os
 from dotenv import load_dotenv
-import subprocess
 import json
-import sys
 
 # تحميل متغيرات البيئة
 load_dotenv()
@@ -32,12 +29,8 @@ st.markdown("""
     }
     
     /* الخلفية والألوان */
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
     .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     
     /* رسائل المحادثة */
@@ -64,6 +57,7 @@ st.markdown("""
         color: white;
         border-left: 5px solid #667eea;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        border-radius: 12px;
     }
     
     .assistant-message {
@@ -71,14 +65,7 @@ st.markdown("""
         color: white;
         border-left: 5px solid #f5576c;
         box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
-    }
-    
-    .code-message {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        color: #00ff00;
-        border-left: 5px solid #00ff00;
-        font-family: 'Courier New', monospace;
-        box-shadow: 0 4px 15px rgba(30, 60, 114, 0.5);
+        border-radius: 12px;
     }
     
     /* العنوان */
@@ -124,24 +111,6 @@ st.markdown("""
         margin: 5px;
     }
     
-    /* الشريط الجانبي */
-    .stSidebar {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    .stSidebar > div > div:first-child {
-        background: transparent;
-    }
-    
-    /* الرسائل الإحصائية */
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 12px;
-        padding: 20px;
-        color: white;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    }
-    
     /* الفاصل */
     hr {
         border: 2px solid #667eea;
@@ -151,26 +120,28 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # العنوان الرئيسي
-st.markdown("""
-<div style='text-align: center; margin-bottom: 30px;'>
-    <h1>🤖 الوكيل الذكي المتقدم</h1>
-    <p style='font-size: 18px; color: #667eea; font-weight: bold;'>
-        نسخة احترافية متقدمة - بدون قيود - استخدام حر تماماً
-    </p>
-</div>
-""", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown("""
+    <div style='text-align: center; margin-bottom: 30px;'>
+        <h1>🤖 الوكيل الذكي المتقدم</h1>
+        <p style='font-size: 18px; color: #667eea; font-weight: bold;'>
+            النسخة الاحترافية الكاملة - بدون قيود
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # الشريط الجانبي
 with st.sidebar:
     st.markdown("### ⚙️ الإعدادات المتقدمة")
-    st.write(f"**⏰ الوقت الحالي:** {datetime.now().strftime('%H:%M:%S')}")
+    st.write(f"**⏰ الوقت:** {datetime.now().strftime('%H:%M:%S')}")
     
     # التحقق من API
     api_key = os.getenv("OPENAI_API_KEY")
     if api_key and api_key != "your_api_key_here" and len(api_key) > 20:
-        st.success("✅ مفتاح OpenAI API: متصل وفعال")
+        st.success("✅ OpenAI API: متصل")
     else:
-        st.warning("⚠️ مفتاح API: غير مكتمل أو غير صحيح")
+        st.warning("⚠️ OpenAI API: غير متصل")
     
     st.divider()
     
@@ -183,21 +154,18 @@ with st.sidebar:
     
     # خيارات متقدمة
     st.subheader("🚀 خيارات متقدمة")
-    enable_code_execution = st.checkbox("✅ تفعيل تنفيذ الأكواد", value=True)
-    enable_web_search = st.checkbox("✅ تفعيل البحث على الويب", value=True)
-    enable_data_analysis = st.checkbox("✅ تفعيل تحليل البيانات", value=True)
+    enable_code = st.checkbox("✅ تنفيذ الأكواد", value=True)
+    enable_analysis = st.checkbox("✅ تحليل البيانات", value=True)
     
     st.divider()
     
     # الإحصائيات
     st.subheader("📊 الإحصائيات")
     if "messages" in st.session_state:
-        total_messages = len(st.session_state.messages)
-        user_messages = sum(1 for m in st.session_state.messages if m["role"] == "user")
-        assistant_messages = total_messages - user_messages
-        st.metric("💬 إجمالي الرسائل", total_messages)
-        st.metric("👤 رسائل المستخدم", user_messages)
-        st.metric("🤖 رسائل الوكيل", assistant_messages)
+        total = len(st.session_state.messages)
+        user_count = sum(1 for m in st.session_state.messages if m["role"] == "user")
+        st.metric("💬 إجمالي", total)
+        st.metric("👤 المستخدم", user_count)
     
     st.divider()
     
@@ -208,49 +176,45 @@ with st.sidebar:
             st.session_state.clear()
             st.rerun()
     with col2:
-        if st.button("💾 حفظ المحادثة"):
-            st.success("✅ تم حفظ المحادثة")
+        if st.button("💾 حفظ"):
+            st.success("✅ تم الحفظ")
 
 # تهيئة الجلسة
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "thinking_steps" not in st.session_state:
     st.session_state.thinking_steps = []
-if "code_executions" not in st.session_state:
-    st.session_state.code_executions = []
 
 # الأقسام الرئيسية
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "💬 المحادثة الذكية",
-    "🧠 التفكير المتقدم",
-    "⚙️ تنفيذ الأوامر",
-    "📊 التحليل والبيانات",
-    "🛠️ الأدوات المتقدمة"
+    "💬 المحادثة",
+    "🧠 التفكير",
+    "⚙️ الأوامر",
+    "📊 التحليل",
+    "🛠️ الأدوات"
 ])
 
 # ==================== تبويب المحادثة ====================
 with tab1:
-    st.markdown("### 💬 المحادثة الذكية المتقدمة")
+    st.markdown("### 💬 المحادثة الذكية")
     
     # عرض سجل المحادثات
-    chat_container = st.container()
-    with chat_container:
-        if st.session_state.messages:
-            for i, message in enumerate(st.session_state.messages):
-                if message["role"] == "user":
-                    st.markdown(f"""
-                    <div class="message-container user-message">
-                        <strong>👤 أنت:</strong><br>{message["content"]}
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div class="message-container assistant-message">
-                        <strong>🤖 الوكيل الذكي:</strong><br>{message["content"]}
-                    </div>
-                    """, unsafe_allow_html=True)
-        else:
-            st.info("📌 ابدأ محادثة جديدة - اكتب أي شيء تريده والوكيل سيرد عليك بذكاء!")
+    if st.session_state.messages:
+        for message in st.session_state.messages:
+            if message["role"] == "user":
+                st.markdown(f"""
+                <div class="message-container user-message">
+                    <strong>👤 أنت:</strong><br>{message["content"]}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class="message-container assistant-message">
+                    <strong>🤖 الوكيل:</strong><br>{message["content"]}
+                </div>
+                """, unsafe_allow_html=True)
+    else:
+        st.info("📌 ابدأ المحادثة الآن!")
     
     st.divider()
     
@@ -259,7 +223,7 @@ with tab1:
     with col1:
         user_input = st.text_input(
             "اكتب رسالتك:",
-            placeholder="مثال: احسب جذر 144 أو اكتب لي قصة أو علمني البرمجة...",
+            placeholder="اسأل عن أي شيء...",
             key="user_input"
         )
     with col2:
@@ -269,144 +233,107 @@ with tab1:
     if send_button and user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
         
-        with st.spinner("🤔 الوكيل يفكر ويرد عليك..."):
+        with st.spinner("🤔 جاري المعالجة..."):
             try:
                 api_key = os.getenv("OPENAI_API_KEY")
                 if not api_key or api_key == "your_api_key_here":
-                    raise ValueError("مفتاح OpenAI API غير موجود")
-                
-                from openai import OpenAI
-                client = OpenAI(api_key=api_key)
-                
-                # تحضير الرسائل
-                messages_for_api = [
-                    {"role": msg["role"], "content": msg["content"]}
-                    for msg in st.session_state.messages
-                ]
-                
-                # استدعاء OpenAI
-                response = client.chat.completions.create(
-                    model="gpt-4",
-                    messages=messages_for_api,
-                    temperature=temperature,
-                    max_tokens=max_tokens
-                )
-                
-                assistant_message = response.choices[0].message.content
-                st.session_state.messages.append({"role": "assistant", "content": assistant_message})
-                
-                # تسجيل خطوات التفكير
-                st.session_state.thinking_steps.append({
-                    "timestamp": datetime.now().isoformat(),
-                    "input": user_input,
-                    "model": "gpt-4",
-                    "tokens": response.usage.total_tokens
-                })
-                
-                st.success("✅ تم معالجة الرسالة بنجاح!")
-                st.rerun()
-                
+                    st.error("❌ مفتاح API غير موجود")
+                else:
+                    from openai import OpenAI
+                    client = OpenAI(api_key=api_key)
+                    
+                    messages_for_api = [
+                        {"role": msg["role"], "content": msg["content"]}
+                        for msg in st.session_state.messages
+                    ]
+                    
+                    response = client.chat.completions.create(
+                        model="gpt-4",
+                        messages=messages_for_api,
+                        temperature=temperature,
+                        max_tokens=max_tokens
+                    )
+                    
+                    assistant_message = response.choices[0].message.content
+                    st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+                    
+                    st.session_state.thinking_steps.append({
+                        "timestamp": datetime.now().isoformat(),
+                        "input": user_input,
+                        "tokens": response.usage.total_tokens
+                    })
+                    
+                    st.success("✅ تم!")
+                    st.rerun()
+                    
             except Exception as e:
                 st.error(f"❌ خطأ: {str(e)}")
 
 # ==================== تبويب التفكير ====================
 with tab2:
-    st.markdown("### 🧠 مسار التفكير المتقدم")
+    st.markdown("### 🧠 مسار التفكير")
     
     if st.session_state.thinking_steps:
-        st.info(f"📌 تم معالجة {len(st.session_state.thinking_steps)} رسالة")
+        st.info(f"📌 {len(st.session_state.thinking_steps)} خطوات معالجة")
         
         for i, step in enumerate(st.session_state.thinking_steps, 1):
-            with st.expander(f"🔍 الخطوة {i}: {step['input'][:60]}..."):
-                col1, col2, col3, col4 = st.columns(4)
+            with st.expander(f"الخطوة {i}: {step['input'][:50]}..."):
+                col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric("⏰ الوقت", step['timestamp'].split('T')[1][:8])
                 with col2:
-                    st.metric("🤖 النموذج", step['model'])
-                with col3:
                     st.metric("📝 الرموز", step['tokens'])
-                with col4:
+                with col3:
                     st.metric("✅ الحالة", "نجح")
-                
-                st.write(f"**الإدخال:** {step['input']}")
     else:
-        st.info("📌 لم تتم معالجة أي رسائل بعد - ابدأ المحادثة!")
+        st.info("📌 لا توجد خطوات بعد")
 
-# ==================== تبويب تنفيذ الأوامر ====================
+# ==================== تبويب الأوامر ====================
 with tab3:
-    st.markdown("### ⚙️ تنفيذ الأوامر والأكواد")
+    st.markdown("### ⚙️ تنفيذ الأوامر")
     
-    if enable_code_execution:
-        st.success("✅ تنفيذ الأوامر: مفعّل")
+    if enable_code:
+        st.success("✅ التنفيذ: مفعّل")
         
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            code_input = st.text_area(
-                "اكتب كود Python:",
-                placeholder="مثال:\nprint('مرحبا')\nimport math\nprint(math.sqrt(144))",
-                height=200
-            )
-        with col2:
-            if st.button("▶️ تنفيذ", use_container_width=True):
-                if code_input:
-                    try:
-                        exec_globals = {}
-                        exec(code_input, exec_globals)
-                        st.success("✅ تم تنفيذ الكود بنجاح!")
-                        
-                        st.session_state.code_executions.append({
-                            "code": code_input,
-                            "timestamp": datetime.now().isoformat(),
-                            "status": "نجح"
-                        })
-                    except Exception as e:
-                        st.error(f"❌ خطأ في التنفيذ: {str(e)}")
+        code_input = st.text_area(
+            "اكتب كود Python:",
+            placeholder="print('مرحبا')",
+            height=200
+        )
         
-        st.divider()
-        
-        # سجل التنفيذات
-        if st.session_state.code_executions:
-            st.subheader("📋 سجل التنفيذات")
-            for i, exec_record in enumerate(st.session_state.code_executions, 1):
-                with st.expander(f"التنفيذ {i} - {exec_record['timestamp'].split('T')[1][:8]}"):
-                    st.code(exec_record['code'], language='python')
-                    st.write(f"**الحالة:** {exec_record['status']}")
+        if st.button("▶️ تنفيذ"):
+            if code_input:
+                try:
+                    exec(code_input)
+                    st.success("✅ تم التنفيذ!")
+                except Exception as e:
+                    st.error(f"❌ خطأ: {str(e)}")
     else:
-        st.warning("⚠️ تنفيذ الأوامر: معطّل")
+        st.warning("⚠️ التنفيذ: معطّل")
 
 # ==================== تبويب التحليل ====================
 with tab4:
-    st.markdown("### 📊 التحليل والبيانات المتقدم")
+    st.markdown("### 📊 التحليل والبيانات")
     
-    if enable_data_analysis:
-        st.success("✅ تحليل البيانات: مفعّل")
+    if enable_analysis:
+        st.success("✅ التحليل: مفعّل")
         
-        col1, col2 = st.columns(2)
-        with col1:
-            st.subheader("📈 إدخال البيانات")
-            data_input = st.text_area(
-                "أدخل البيانات (JSON أو CSV):",
-                placeholder='{"data": [1, 2, 3, 4, 5]}',
-                height=150
-            )
+        data_input = st.text_area(
+            "أدخل البيانات (JSON):",
+            placeholder='{"data": [1, 2, 3]}',
+            height=150
+        )
         
-        with col2:
-            st.subheader("📊 نوع التحليل")
-            analysis_type = st.selectbox(
-                "اختر نوع التحليل:",
-                ["الإحصائيات الأساسية", "الرسوم البيانية", "التنبؤات", "التجميع"]
-            )
-        
-        if st.button("🔍 تحليل البيانات"):
-            try:
-                import json
-                data = json.loads(data_input)
-                st.success("✅ تم تحليل البيانات بنجاح!")
-                st.json(data)
-            except Exception as e:
-                st.error(f"❌ خطأ في التحليل: {str(e)}")
+        if st.button("🔍 تحليل"):
+            if data_input:
+                try:
+                    data = json.loads(data_input)
+                    st.success("✅ تم التحليل!")
+                    st.json(data)
+                except Exception as e:
+                    st.error(f"❌ خطأ: {str(e)}")
     else:
-        st.warning("⚠️ تحليل البيانات: معطّل")
+        st.warning("⚠️ التحليل: معطّل")
 
 # ==================== تبويب الأدوات ====================
 with tab5:
@@ -417,25 +344,25 @@ with tab5:
     with col1:
         st.markdown("""
         #### 📊 تحليل البيانات
-        - معالجة ملفات CSV و Excel
-        - إنشاء رسوم بيانية متقدمة
-        - تحليل إحصائي شامل
+        - معالجة البيانات
+        - رسوم بيانية
+        - إحصائيات
         """)
     
     with col2:
         st.markdown("""
-        #### 🔍 البحث المتقدم
-        - البحث على الويب
-        - استخراج المعلومات
-        - تلخيص النصوص
+        #### 🔍 البحث
+        - بحث متقدم
+        - استخراج معلومات
+        - تلخيص
         """)
     
     with col3:
         st.markdown("""
-        #### ⚙️ تنفيذ الأوامر
-        - تنفيذ أكواد Python
-        - أتمتة المهام
-        - معالجة الملفات
+        #### ⚙️ التنفيذ
+        - أكواد Python
+        - أتمتة
+        - معالجة ملفات
         """)
 
 st.divider()
@@ -443,8 +370,8 @@ st.divider()
 # الفوتر
 st.markdown("""
 <div style='text-align: center; margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;'>
-    <h3>🤖 الوكيل الذكي المتقدم - النسخة الاحترافية</h3>
-    <p>مدعوم بـ GPT-4 | بدون قيود | استخدام حر تماماً</p>
+    <h3>🤖 الوكيل الذكي المتقدم</h3>
+    <p>النسخة الاحترافية الكاملة - مدعوم بـ GPT-4</p>
     <p style='font-size: 12px; margin-top: 10px;'>© 2026 - جميع الحقوق محفوظة</p>
 </div>
 """, unsafe_allow_html=True)
