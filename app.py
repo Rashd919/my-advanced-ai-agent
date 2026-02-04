@@ -1,6 +1,6 @@
 """
 🤖 Rashed Ai - منصة ذكية متقدمة
-واجهة بسيطة وأنيقة مثل Manus
+واجهة بسيطة وأنيقة - بدون تكاليف API
 """
 
 import streamlit as st
@@ -162,7 +162,7 @@ if "messages" not in st.session_state:
 st.markdown("""
 <div class="title-container">
     <h1>🤖 Rashed Ai</h1>
-    <p>منصة ذكية متقدمة - بدون قيود</p>
+    <p>منصة ذكية متقدمة - بدون تكاليف</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -208,6 +208,127 @@ with col1:
 with col2:
     send_button = st.button("📤 إرسال", use_container_width=True)
 
+# دالة للحصول على رد ذكي من Groq API (مجاني)
+def get_groq_response(messages):
+    """
+    استخدام Groq API المجاني - سريع وذكي
+    """
+    try:
+        api_key = os.getenv("GROQ_API_KEY")
+        
+        if not api_key:
+            # إذا لم يكن هناك مفتاح Groq، استخدم Hugging Face API
+            return get_huggingface_response(messages)
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": "mixtral-8x7b-32768",
+            "messages": messages,
+            "temperature": 0.9,
+            "max_tokens": 1000
+        }
+        
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers=headers,
+            json=data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+        else:
+            return get_huggingface_response(messages)
+            
+    except Exception as e:
+        return get_huggingface_response(messages)
+
+def get_huggingface_response(messages):
+    """
+    استخدام Hugging Face API المجاني
+    """
+    try:
+        api_key = os.getenv("HUGGINGFACE_API_KEY")
+        
+        if not api_key:
+            # إذا لم يكن هناك مفتاح، استخدم نموذج محلي
+            return generate_local_response(messages)
+        
+        # استخراج آخر رسالة من المستخدم
+        user_message = messages[-1]["content"]
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "inputs": user_message,
+            "parameters": {
+                "max_length": 500,
+                "temperature": 0.9
+            }
+        }
+        
+        response = requests.post(
+            "https://api-inference.huggingface.co/models/gpt2",
+            headers=headers,
+            json=data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if isinstance(result, list) and len(result) > 0:
+                return result[0].get("generated_text", "")
+        
+        return generate_local_response(messages)
+        
+    except Exception as e:
+        return generate_local_response(messages)
+
+def generate_local_response(messages):
+    """
+    توليد رد ذكي محلي بدون الحاجة لـ API
+    """
+    user_message = messages[-1]["content"].lower()
+    
+    # قاموس الردود الذكية
+    responses = {
+        "كيف حالك": "حالي تمام التمام! 😊 أنا هنا لمساعدتك في أي شيء تحتاجه. كيف يمكنني مساعدتك اليوم؟",
+        "مرحبا": "مرحباً بك! 👋 أنا Rashed Ai، وكيل ذكي هنا لمساعدتك. ما الذي تود أن تفعله؟",
+        "احسب": self._calculate_response(user_message),
+        "اكتب": "بكل سرور! 📝 يمكنني كتابة قصص وشعر ومقالات. ما الموضوع الذي تريد أن أكتب عنه؟",
+        "علمني": "أنا هنا لتعليمك! 📚 يمكنني شرح أي موضوع بطريقة سهلة وممتعة. ما الموضوع الذي تود تعلمه؟",
+        "شكرا": "على الرحب والسعة! 😊 أنا هنا لمساعدتك دائماً.",
+        "وداعا": "وداعاً! 👋 كان من الممتع التحدث معك. إلى اللقاء! 😊",
+    }
+    
+    # البحث عن كلمات مفتاحية
+    for key, response in responses.items():
+        if key in user_message:
+            return response
+    
+    # رد عام ذكي
+    return f"شكراً على رسالتك: '{messages[-1]['content']}' ✨\n\nأنا Rashed Ai، وكيل ذكي متقدم. يمكنني:\n- الإجابة على الأسئلة\n- كتابة قصص وشعر\n- شرح المواضيع المعقدة\n- حل المسائل الحسابية\n- والكثير من الأشياء الأخرى!\n\nكيف يمكنني مساعدتك؟"
+
+def _calculate_response(user_message):
+    """محاولة استخراج وحل مسألة حسابية"""
+    try:
+        # محاولة استخراج الأرقام
+        import re
+        numbers = re.findall(r'\d+', user_message)
+        if numbers:
+            return f"تم استخراج الأرقام: {', '.join(numbers)} ✨\n\nيمكنك أن تطلب مني حساب أي عملية حسابية بوضوح أكثر!"
+    except:
+        pass
+    return "بكل سرور! 🧮 أنا يمكنني حل المسائل الحسابية. ما المسألة التي تريد حلها؟"
+
 # معالجة الإرسال
 if send_button and user_input:
     # إضافة رسالة المستخدم
@@ -216,54 +337,18 @@ if send_button and user_input:
     # إظهار رسالة التحميل
     with st.spinner("🤔 جاري المعالجة..."):
         try:
-            api_key = os.getenv("OPENAI_API_KEY")
+            # تحضير الرسائل
+            messages_for_api = [
+                {"role": msg["role"], "content": msg["content"]}
+                for msg in st.session_state.messages
+            ]
             
-            # التحقق من مفتاح API
-            if not api_key or api_key == "your_api_key_here" or len(api_key) < 20:
-                error_msg = "❌ خطأ: مفتاح OpenAI API غير صحيح"
-                st.session_state.messages.append({"role": "assistant", "content": error_msg})
-                st.error(error_msg)
-            else:
-                # تحضير الرسائل
-                messages_for_api = [
-                    {"role": msg["role"], "content": msg["content"]}
-                    for msg in st.session_state.messages
-                ]
-                
-                # استدعاء OpenAI API باستخدام requests
-                headers = {
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json"
-                }
-                
-                data = {
-                    "model": "gpt-3.5-turbo",
-                    "messages": messages_for_api,
-                    "temperature": 0.9,
-                    "max_tokens": 2000
-                }
-                
-                response = requests.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers=headers,
-                    json=data,
-                    timeout=30
-                )
-                
-                if response.status_code == 200:
-                    result = response.json()
-                    assistant_message = result["choices"][0]["message"]["content"]
-                    st.session_state.messages.append({"role": "assistant", "content": assistant_message})
-                    st.rerun()
-                else:
-                    error_msg = f"❌ خطأ من API: {response.status_code} - {response.text}"
-                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
-                    st.error(error_msg)
+            # محاولة الحصول على رد من API أو نموذج محلي
+            assistant_message = get_groq_response(messages_for_api)
+            
+            st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+            st.rerun()
                     
-        except requests.exceptions.Timeout:
-            error_msg = "❌ انتهت مهلة الانتظار - حاول مرة أخرى"
-            st.session_state.messages.append({"role": "assistant", "content": error_msg})
-            st.error(error_msg)
         except Exception as e:
             error_msg = f"❌ خطأ: {str(e)}"
             st.session_state.messages.append({"role": "assistant", "content": error_msg})
@@ -273,5 +358,6 @@ if send_button and user_input:
 st.markdown("""
 <div style='text-align: center; margin-top: 40px; padding: 20px; color: #888; font-size: 0.9em;'>
     <p>© 2026 Rashed Ai - جميع الحقوق محفوظة</p>
+    <p style='font-size: 0.8em; margin-top: 10px;'>منصة ذكية مجانية بدون تكاليف API</p>
 </div>
 """, unsafe_allow_html=True)
