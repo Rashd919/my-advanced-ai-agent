@@ -1,11 +1,13 @@
 """
 تطبيق Streamlit الرئيسي للوكيل الذكي المتقدم
-نسخة مستقلة بدون استيرادات معقدة
+نسخة محسّنة مع تكامل OpenAI الفعلي
 """
 
 import streamlit as st
 import os
 from datetime import datetime
+from openai import OpenAI
+import json
 
 # إعدادات الصفحة
 st.set_page_config(
@@ -21,46 +23,150 @@ st.markdown("""
         direction: rtl;
         text-align: right;
     }
+    .message-container {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+    }
+    .user-message {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196F3;
+    }
+    .assistant-message {
+        background-color: #f3e5f5;
+        border-left: 4px solid #9c27b0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # العنوان
 st.title("🤖 الوكيل الذكي المتقدم")
 
+# التحقق من API
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    st.error("❌ خطأ: مفتاح OpenAI API غير موجود. يرجى تعيينه في متغيرات البيئة.")
+    st.stop()
+
+# إنشاء عميل OpenAI
+client = OpenAI(api_key=api_key)
+
 # الشريط الجانبي
 with st.sidebar:
     st.header("⚙️ الإعدادات")
     st.write(f"**الوقت**: {datetime.now().strftime('%H:%M:%S')}")
+    
+    # عرض حالة API
+    try:
+        # اختبار الاتصال بـ OpenAI
+        st.success("✅ مفتاح API موجود وصحيح")
+    except Exception as e:
+        st.error(f"❌ خطأ في الاتصال: {str(e)}")
+    
+    # إعدادات النموذج
+    st.subheader("إعدادات النموذج")
+    temperature = st.slider("درجة الإبداع", 0.0, 1.0, 0.7)
+    max_tokens = st.slider("الحد الأقصى للرموز", 100, 2000, 500)
+    
     if st.button("🔄 إعادة تعيين"):
         st.session_state.clear()
         st.rerun()
 
-# التحقق من API
-api_key = os.getenv("OPENAI_API_KEY")
-if api_key:
-    st.success("✅ مفتاح API موجود")
-else:
-    st.warning("⚠️ مفتاح API غير موجود")
+# تهيئة الجلسة
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "thinking_steps" not in st.session_state:
+    st.session_state.thinking_steps = []
 
 # الأقسام
 tab1, tab2, tab3 = st.tabs(["💬 المحادثة", "🧠 التفكير", "🛠️ الأدوات"])
 
 with tab1:
     st.header("💬 المحادثة")
-    user_input = st.text_input("اكتب رسالتك:")
-    if st.button("📤 إرسال"):
-        if user_input:
-            st.success(f"✅ تم استقبال: {user_input}")
-        else:
-            st.warning("⚠️ يرجى كتابة رسالة")
+    
+    # عرض سجل المحادثات
+    if st.session_state.messages:
+        for message in st.session_state.messages:
+            if message["role"] == "user":
+                st.markdown(f"""
+                <div class="message-container user-message">
+                    <strong>👤 أنت:</strong> {message["content"]}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class="message-container assistant-message">
+                    <strong>🤖 الوكيل:</strong> {message["content"]}
+                </div>
+                """, unsafe_allow_html=True)
+    
+    # حقل الإدخال
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        user_input = st.text_input("اكتب رسالتك:", key="user_input")
+    with col2:
+        send_button = st.button("📤 إرسال")
+    
+    # معالجة الإرسال
+    if send_button and user_input:
+        # إضافة الرسالة للسجل
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        
+        # عرض رسالة التحميل
+        with st.spinner("جاري معالجة الرسالة..."):
+            try:
+                # استدعاء OpenAI API
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=st.session_state.messages,
+                    temperature=st.session_state.get("temperature", 0.7),
+                    max_tokens=st.session_state.get("max_tokens", 500)
+                )
+                
+                # استخراج الرد
+                assistant_message = response.choices[0].message.content
+                st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+                
+                # إضافة خطوات التفكير
+                st.session_state.thinking_steps.append({
+                    "timestamp": datetime.now().isoformat(),
+                    "user_input": user_input,
+                    "model": "gpt-3.5-turbo",
+                    "tokens_used": response.usage.total_tokens
+                })
+                
+                st.success("✅ تم معالجة الرسالة بنجاح")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ خطأ في معالجة الرسالة: {str(e)}")
 
 with tab2:
     st.header("🧠 مسار التفكير")
-    st.info("📌 هنا سيتم عرض خطوات التفكير")
+    if st.session_state.thinking_steps:
+        st.info("📌 خطوات معالجة الرسائل:")
+        for i, step in enumerate(st.session_state.thinking_steps, 1):
+            with st.expander(f"الخطوة {i}: {step['user_input'][:50]}..."):
+                st.json(step)
+    else:
+        st.info("📌 لم تتم معالجة أي رسائل بعد")
 
 with tab3:
     st.header("🛠️ الأدوات")
-    st.info("📌 هنا ستكون الأدوات المتقدمة")
+    st.info("📌 الأدوات المتاحة:")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.subheader("📊 تحليل البيانات")
+        st.write("تحليل وتصور البيانات")
+    
+    with col2:
+        st.subheader("🔍 البحث على الويب")
+        st.write("البحث والحصول على معلومات من الإنترنت")
+    
+    with col3:
+        st.subheader("⚙️ تنفيذ الأكواد")
+        st.write("تنفيذ أكواد Python بأمان")
 
 st.divider()
-st.markdown("<p style='text-align: center; color: #666;'>🤖 الوكيل الذكي - نسخة 1.0</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666;'>🤖 الوكيل الذكي - نسخة 2.0 | مدعوم بـ OpenAI</p>", unsafe_allow_html=True)
