@@ -1,10 +1,15 @@
 """
 تطبيق Streamlit الرئيسي للوكيل الذكي المتقدم
-نسخة بسيطة جداً - بدون استيراد معقد
+مع تكامل OpenAI الفعلي للردود الذكية
 """
 
 import streamlit as st
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+# تحميل متغيرات البيئة
+load_dotenv()
 
 # إعدادات الصفحة
 st.set_page_config(
@@ -43,7 +48,13 @@ st.title("🤖 الوكيل الذكي المتقدم")
 with st.sidebar:
     st.header("⚙️ الإعدادات")
     st.write(f"**الوقت**: {datetime.now().strftime('%H:%M:%S')}")
-    st.success("✅ مفتاح API موجود وصحيح")
+    
+    # التحقق من API
+    api_key = os.getenv("OPENAI_API_KEY")
+    if api_key and api_key != "your_api_key_here":
+        st.success("✅ مفتاح API موجود وصحيح")
+    else:
+        st.warning("⚠️ مفتاح API غير موجود أو غير صحيح")
     
     # إعدادات النموذج
     st.subheader("إعدادات النموذج")
@@ -96,19 +107,61 @@ with tab1:
         # إضافة الرسالة للسجل
         st.session_state.messages.append({"role": "user", "content": user_input})
         
-        # رسالة رد بسيطة
-        response = f"شكراً على رسالتك: '{user_input}'. تم استقبالها بنجاح! ✅"
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        
-        # إضافة خطوات التفكير
-        st.session_state.thinking_steps.append({
-            "timestamp": datetime.now().isoformat(),
-            "user_input": user_input,
-            "model": "gpt-3.5-turbo",
-            "tokens_used": len(user_input.split())
-        })
-        
-        st.rerun()
+        # عرض رسالة التحميل
+        with st.spinner("جاري معالجة الرسالة..."):
+            try:
+                # التحقق من وجود مفتاح API
+                api_key = os.getenv("OPENAI_API_KEY")
+                if not api_key or api_key == "your_api_key_here":
+                    raise ValueError("مفتاح OpenAI API غير موجود أو غير صحيح")
+                
+                # استيراد OpenAI
+                try:
+                    from openai import OpenAI
+                except ImportError:
+                    st.error("❌ مكتبة OpenAI غير مثبتة")
+                    st.stop()
+                
+                # إنشاء عميل OpenAI
+                client = OpenAI(api_key=api_key)
+                
+                # تحضير الرسائل للإرسال
+                messages_for_api = []
+                for msg in st.session_state.messages:
+                    messages_for_api.append({
+                        "role": msg["role"],
+                        "content": msg["content"]
+                    })
+                
+                # استدعاء OpenAI API
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=messages_for_api,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                )
+                
+                # استخراج الرد
+                assistant_message = response.choices[0].message.content
+                st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+                
+                # إضافة خطوات التفكير
+                st.session_state.thinking_steps.append({
+                    "timestamp": datetime.now().isoformat(),
+                    "user_input": user_input,
+                    "model": "gpt-3.5-turbo",
+                    "tokens_used": response.usage.total_tokens,
+                    "prompt_tokens": response.usage.prompt_tokens,
+                    "completion_tokens": response.usage.completion_tokens
+                })
+                
+                st.success("✅ تم معالجة الرسالة بنجاح")
+                st.rerun()
+            except ValueError as e:
+                st.error(f"❌ خطأ في الإعدادات: {str(e)}")
+            except Exception as e:
+                error_msg = str(e)
+                st.error(f"❌ خطأ في معالجة الرسالة: {error_msg}")
 
 with tab2:
     st.header("🧠 مسار التفكير")
@@ -122,7 +175,14 @@ with tab2:
                 with col2:
                     st.metric("النموذج", step['model'])
                 with col3:
-                    st.metric("الكلمات", step['tokens_used'])
+                    st.metric("إجمالي الرموز", step['tokens_used'])
+                
+                col4, col5 = st.columns(2)
+                with col4:
+                    st.metric("رموز الإدخال", step['prompt_tokens'])
+                with col5:
+                    st.metric("رموز الإخراج", step['completion_tokens'])
+                
                 st.write(f"**الإدخال:** {step['user_input']}")
     else:
         st.info("📌 لم تتم معالجة أي رسائل بعد")
