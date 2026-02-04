@@ -4,10 +4,11 @@
 """
 
 import streamlit as st
-import openai
+import requests
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+import json
 
 # تحميل متغيرات البيئة
 load_dotenv()
@@ -219,39 +220,54 @@ if send_button and user_input:
             
             # التحقق من مفتاح API
             if not api_key or api_key == "your_api_key_here" or len(api_key) < 20:
-                error_msg = "❌ خطأ: مفتاح OpenAI API غير صحيح أو غير موجود"
+                error_msg = "❌ خطأ: مفتاح OpenAI API غير صحيح"
                 st.session_state.messages.append({"role": "assistant", "content": error_msg})
                 st.error(error_msg)
             else:
-                # تعيين مفتاح API
-                openai.api_key = api_key
-                
                 # تحضير الرسائل
                 messages_for_api = [
                     {"role": msg["role"], "content": msg["content"]}
                     for msg in st.session_state.messages
                 ]
                 
-                # استدعاء OpenAI API
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=messages_for_api,
-                    temperature=0.9,
-                    max_tokens=2000
+                # استدعاء OpenAI API باستخدام requests
+                headers = {
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                data = {
+                    "model": "gpt-3.5-turbo",
+                    "messages": messages_for_api,
+                    "temperature": 0.9,
+                    "max_tokens": 2000
+                }
+                
+                response = requests.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers=headers,
+                    json=data,
+                    timeout=30
                 )
                 
-                # استخراج الرد
-                assistant_message = response.choices[0].message.content
-                st.session_state.messages.append({"role": "assistant", "content": assistant_message})
-                
-                # إعادة تحميل الصفحة
-                st.rerun()
-                
+                if response.status_code == 200:
+                    result = response.json()
+                    assistant_message = result["choices"][0]["message"]["content"]
+                    st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+                    st.rerun()
+                else:
+                    error_msg = f"❌ خطأ من API: {response.status_code} - {response.text}"
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
+                    st.error(error_msg)
+                    
+        except requests.exceptions.Timeout:
+            error_msg = "❌ انتهت مهلة الانتظار - حاول مرة أخرى"
+            st.session_state.messages.append({"role": "assistant", "content": error_msg})
+            st.error(error_msg)
         except Exception as e:
             error_msg = f"❌ خطأ: {str(e)}"
             st.session_state.messages.append({"role": "assistant", "content": error_msg})
             st.error(error_msg)
-            st.info("💡 تأكد من صحة مفتاح API والاتصال بالإنترنت")
 
 # الفوتر
 st.markdown("""
