@@ -14,7 +14,7 @@ load_dotenv()
 
 # إعدادات الصفحة
 st.set_page_config(
-    page_title="الوكيل الذكي المتقدم",
+    page_title="Rashed Ai",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -124,9 +124,9 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.markdown("""
     <div style='text-align: center; margin-bottom: 30px;'>
-        <h1>🤖 الوكيل الذكي المتقدم</h1>
+        <h1>🤖 Rashed Ai</h1>
         <p style='font-size: 18px; color: #667eea; font-weight: bold;'>
-            النسخة الاحترافية الكاملة - بدون قيود
+            منصة ذكية متقدمة - بدون قيود
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -370,8 +370,8 @@ st.divider()
 # الفوتر
 st.markdown("""
 <div style='text-align: center; margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;'>
-    <h3>🤖 الوكيل الذكي المتقدم</h3>
-    <p>النسخة الاحترافية الكاملة - مدعوم بـ GPT-4</p>
+    <h3>🤖 Rashed Ai</h3>
+    <p>منصة ذكية متقدمة - مدعوم بـ GPT-4</p>
     <p style='font-size: 12px; margin-top: 10px;'>© 2026 - جميع الحقوق محفوظة</p>
 </div>
 """, unsafe_allow_html=True)
