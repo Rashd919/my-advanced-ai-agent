@@ -239,7 +239,7 @@ with col1:
     user_input = st.text_input(
         "اكتب رسالتك:",
         placeholder="اسأل عن أي شيء - تحليل، برمجة، كتابة، شرح معقد...",
-        key="user_input"
+        key="user_input_field"
     )
 
 with col2:
@@ -483,9 +483,6 @@ if send_button and user_input:
             assistant_message = generate_intelligent_response(messages_for_api)
             
             st.session_state.messages.append({"role": "assistant", "content": assistant_message})
-            
-            # تفريغ حقل الإدخال
-            st.session_state.user_input = ""
             
             st.rerun()
                     
