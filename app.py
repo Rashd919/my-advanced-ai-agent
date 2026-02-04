@@ -1,6 +1,6 @@
 """
-🤖 الوكيل الذكي المتقدم - النسخة الاحترافية الكاملة
-تصميم عصري احترافي + قدرات ذكية متقدمة + بدون قيود
+🤖 Rashed Ai - منصة ذكية متقدمة
+تصميم احترافي + قدرات ذكية متقدمة + بدون قيود
 """
 
 import streamlit as st
@@ -8,6 +8,7 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 import json
+import requests
 
 # تحميل متغيرات البيئة
 load_dotenv()
@@ -210,7 +211,7 @@ with tab1:
             else:
                 st.markdown(f"""
                 <div class="message-container assistant-message">
-                    <strong>🤖 الوكيل:</strong><br>{message["content"]}
+                    <strong>🤖 Rashed:</strong><br>{message["content"]}
                 </div>
                 """, unsafe_allow_html=True)
     else:
@@ -236,35 +237,44 @@ with tab1:
         with st.spinner("🤔 جاري المعالجة..."):
             try:
                 api_key = os.getenv("OPENAI_API_KEY")
-                if not api_key or api_key == "your_api_key_here":
-                    st.error("❌ مفتاح API غير موجود")
+                if not api_key or api_key == "your_api_key_here" or len(api_key) < 20:
+                    st.error("❌ مفتاح OpenAI API غير صحيح أو غير موجود")
+                    st.info("💡 تأكد من وجود مفتاح API صحيح في ملف .env")
                 else:
-                    from openai import OpenAI
-                    client = OpenAI(api_key=api_key)
-                    
-                    messages_for_api = [
-                        {"role": msg["role"], "content": msg["content"]}
-                        for msg in st.session_state.messages
-                    ]
-                    
-                    response = client.chat.completions.create(
-                        model="gpt-4",
-                        messages=messages_for_api,
-                        temperature=temperature,
-                        max_tokens=max_tokens
-                    )
-                    
-                    assistant_message = response.choices[0].message.content
-                    st.session_state.messages.append({"role": "assistant", "content": assistant_message})
-                    
-                    st.session_state.thinking_steps.append({
-                        "timestamp": datetime.now().isoformat(),
-                        "input": user_input,
-                        "tokens": response.usage.total_tokens
-                    })
-                    
-                    st.success("✅ تم!")
-                    st.rerun()
+                    try:
+                        # استدعاء OpenAI API بشكل صحيح
+                        import openai
+                        openai.api_key = api_key
+                        
+                        # تحضير الرسائل
+                        messages_for_api = [
+                            {"role": msg["role"], "content": msg["content"]}
+                            for msg in st.session_state.messages
+                        ]
+                        
+                        # استدعاء API
+                        response = openai.ChatCompletion.create(
+                            model="gpt-3.5-turbo",
+                            messages=messages_for_api,
+                            temperature=temperature,
+                            max_tokens=max_tokens
+                        )
+                        
+                        assistant_message = response.choices[0].message.content
+                        st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+                        
+                        st.session_state.thinking_steps.append({
+                            "timestamp": datetime.now().isoformat(),
+                            "input": user_input,
+                            "tokens": response.usage.total_tokens
+                        })
+                        
+                        st.success("✅ تم!")
+                        st.rerun()
+                        
+                    except Exception as e:
+                        st.error(f"❌ خطأ في الاتصال: {str(e)}")
+                        st.info("💡 تأكد من صحة مفتاح API والاتصال بالإنترنت")
                     
             except Exception as e:
                 st.error(f"❌ خطأ: {str(e)}")
