@@ -1,6 +1,6 @@
 """
 تطبيق Streamlit الرئيسي للوكيل الذكي المتقدم
-نسخة محسّنة مع تكامل OpenAI الفعلي
+نسخة بسيطة وموثوقة
 """
 
 import streamlit as st
@@ -72,14 +72,6 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "thinking_steps" not in st.session_state:
     st.session_state.thinking_steps = []
-if "temperature" not in st.session_state:
-    st.session_state.temperature = 0.7
-if "max_tokens" not in st.session_state:
-    st.session_state.max_tokens = 500
-
-# تحديث الإعدادات من الشريط الجانبي
-st.session_state.temperature = temperature
-st.session_state.max_tokens = max_tokens
 
 # الأقسام
 tab1, tab2, tab3 = st.tabs(["💬 المحادثة", "🧠 التفكير", "🛠️ الأدوات"])
@@ -124,8 +116,12 @@ with tab1:
                 if not api_key or api_key == "your_api_key_here":
                     raise ValueError("مفتاح OpenAI API غير موجود أو غير صحيح")
                 
-                # استيراد OpenAI
-                from openai import OpenAI
+                # استيراد OpenAI بشكل آمن
+                try:
+                    from openai import OpenAI
+                except ImportError:
+                    st.error("❌ مكتبة OpenAI غير مثبتة")
+                    st.stop()
                 
                 # إنشاء عميل OpenAI
                 client = OpenAI(api_key=api_key)
@@ -134,8 +130,8 @@ with tab1:
                 response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=st.session_state.messages,
-                    temperature=st.session_state.temperature,
-                    max_tokens=st.session_state.max_tokens
+                    temperature=temperature,
+                    max_tokens=max_tokens
                 )
                 
                 # استخراج الرد
@@ -155,7 +151,8 @@ with tab1:
             except ValueError as e:
                 st.error(f"❌ خطأ في الإعدادات: {str(e)}")
             except Exception as e:
-                st.error(f"❌ خطأ في معالجة الرسالة: {str(e)}")
+                error_msg = str(e)
+                st.error(f"❌ خطأ في معالجة الرسالة: {error_msg}")
 
 with tab2:
     st.header("🧠 مسار التفكير")
