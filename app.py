@@ -1,6 +1,6 @@
 """
 🤖 Rashed Ai - منصة ذكية متقدمة
-واجهة بسيطة وأنيقة - بدون تكاليف API
+تصميم عصري حديث احترافي 100%
 """
 
 import streamlit as st
@@ -8,7 +8,6 @@ import requests
 from datetime import datetime
 import os
 from dotenv import load_dotenv
-import json
 
 # تحميل متغيرات البيئة
 load_dotenv()
@@ -21,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS احترافي - تصميم بسيط وأنيق
+# CSS عصري وحديث - تصميم احترافي 100%
 st.markdown("""
 <style>
     * {
@@ -29,127 +28,170 @@ st.markdown("""
         text-align: right;
     }
     
-    /* الخلفية */
+    /* الخلفية الرئيسية */
     .stApp {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     }
     
-    /* رسائل المحادثة */
-    .user-message {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* حاوية الرسائل - تصميم حديث */
+    .user-msg {
+        display: flex;
+        justify-content: flex-end;
+        margin: 12px 0;
+    }
+    
+    .user-msg-bubble {
+        background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
         color: white;
-        padding: 15px 20px;
-        border-radius: 18px;
-        margin: 10px 0;
-        margin-left: 50px;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        animation: slideIn 0.3s ease-in-out;
-    }
-    
-    .assistant-message {
-        background: #2a2a3e;
-        color: #e0e0e0;
-        padding: 15px 20px;
-        border-radius: 18px;
-        margin: 10px 0;
-        margin-right: 50px;
-        border-left: 4px solid #667eea;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
-        animation: slideIn 0.3s ease-in-out;
-    }
-    
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    /* العنوان */
-    .title-container {
-        text-align: center;
-        padding: 30px 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 14px 18px;
         border-radius: 20px;
-        margin-bottom: 30px;
+        max-width: 70%;
+        word-wrap: break-word;
+        box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        font-size: 15px;
+        line-height: 1.5;
     }
     
-    .title-container h1 {
+    .assistant-msg {
+        display: flex;
+        justify-content: flex-start;
+        margin: 12px 0;
+    }
+    
+    .assistant-msg-bubble {
+        background: linear-gradient(135deg, #2d3561 0%, #3d4a7a 100%);
+        color: #e8f0ff;
+        padding: 14px 18px;
+        border-radius: 20px;
+        max-width: 70%;
+        word-wrap: break-word;
+        box-shadow: 0 4px 12px rgba(45, 53, 97, 0.5);
+        font-size: 15px;
+        line-height: 1.5;
+        border-left: 4px solid #00d4ff;
+    }
+    
+    /* العنوان الرئيسي */
+    .header-section {
+        text-align: center;
+        padding: 40px 20px;
+        background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+        border-radius: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+    }
+    
+    .header-section h1 {
         color: white;
-        font-size: 2.5em;
+        font-size: 3em;
         font-weight: 900;
         margin: 0;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        letter-spacing: 1px;
     }
     
-    .title-container p {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 1.1em;
-        margin: 10px 0 0 0;
+    .header-section p {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.2em;
+        margin: 12px 0 0 0;
+        font-weight: 500;
     }
     
-    /* حقل الإدخال */
-    .stTextInput > div > div > input {
+    /* منطقة المحادثة */
+    .chat-area {
+        background: rgba(45, 53, 97, 0.3);
         border-radius: 25px;
-        border: 2px solid #667eea;
-        padding: 15px 20px;
+        padding: 25px;
+        margin: 25px 0;
+        min-height: 450px;
+        max-height: 650px;
+        overflow-y: auto;
+        border: 2px solid rgba(0, 212, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+    
+    /* شريط الإدخال */
+    .stTextInput > div > div > input {
+        border-radius: 20px;
+        border: 2px solid #00d4ff;
+        padding: 16px 20px;
         font-size: 16px;
         background: #1a1a2e;
-        color: white;
+        color: #e8f0ff;
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #00ff88;
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
     }
     
     .stTextInput > div > div > input::placeholder {
-        color: #888;
+        color: #666;
     }
     
     /* الأزرار */
     .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
         color: white;
         border: none;
-        border-radius: 25px;
-        padding: 12px 30px;
-        font-weight: bold;
+        border-radius: 20px;
+        padding: 14px 28px;
+        font-weight: 700;
+        font-size: 16px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        cursor: pointer;
     }
     
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-    }
-    
-    /* منطقة المحادثة */
-    .chat-container {
-        background: rgba(26, 26, 46, 0.5);
-        border-radius: 20px;
-        padding: 20px;
-        margin: 20px 0;
-        min-height: 400px;
-        max-height: 600px;
-        overflow-y: auto;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
+        background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
     }
     
     /* الفاصل */
     hr {
         border: none;
-        border-top: 2px solid rgba(102, 126, 234, 0.3);
-        margin: 20px 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+        margin: 25px 0;
     }
     
-    /* النص العام */
-    body {
-        color: #e0e0e0;
+    /* رسالة الترحيب */
+    .welcome-msg {
+        text-align: center;
+        padding: 60px 30px;
+        color: #888;
     }
     
-    /* الرسائل */
-    .message-text {
-        word-wrap: break-word;
-        line-height: 1.6;
+    .welcome-msg h2 {
+        color: #00d4ff;
+        font-size: 2em;
+        margin: 0 0 15px 0;
+    }
+    
+    .welcome-msg p {
+        color: #aaa;
+        font-size: 1.1em;
+        margin: 0;
+    }
+    
+    /* الفوتر */
+    .footer-section {
+        text-align: center;
+        padding: 25px;
+        color: #666;
+        font-size: 0.9em;
+        border-top: 2px solid rgba(0, 212, 255, 0.1);
+        margin-top: 30px;
+    }
+    
+    /* شريط التحميل */
+    .loading-spinner {
+        text-align: center;
+        padding: 20px;
+        color: #00d4ff;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -158,34 +200,34 @@ st.markdown("""
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# العنوان
+# العنوان الرئيسي
 st.markdown("""
-<div class="title-container">
+<div class="header-section">
     <h1>🤖 Rashed Ai</h1>
     <p>منصة ذكية متقدمة - بدون تكاليف</p>
 </div>
 """, unsafe_allow_html=True)
 
 # منطقة المحادثة
-st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+st.markdown('<div class="chat-area">', unsafe_allow_html=True)
 
 if st.session_state.messages:
     for message in st.session_state.messages:
         if message["role"] == "user":
             st.markdown(f"""
-            <div class="user-message">
-                <div class="message-text">{message["content"]}</div>
+            <div class="user-msg">
+                <div class="user-msg-bubble">{message["content"]}</div>
             </div>
             """, unsafe_allow_html=True)
         else:
             st.markdown(f"""
-            <div class="assistant-message">
-                <div class="message-text">{message["content"]}</div>
+            <div class="assistant-msg">
+                <div class="assistant-msg-bubble">{message["content"]}</div>
             </div>
             """, unsafe_allow_html=True)
 else:
     st.markdown("""
-    <div style="text-align: center; padding: 50px; color: #888;">
+    <div class="welcome-msg">
         <h2>👋 مرحباً بك في Rashed Ai</h2>
         <p>ابدأ المحادثة الآن - اسأل عن أي شيء!</p>
     </div>
@@ -208,126 +250,42 @@ with col1:
 with col2:
     send_button = st.button("📤 إرسال", use_container_width=True)
 
-# دالة للحصول على رد ذكي من Groq API (مجاني)
-def get_groq_response(messages):
-    """
-    استخدام Groq API المجاني - سريع وذكي
-    """
-    try:
-        api_key = os.getenv("GROQ_API_KEY")
-        
-        if not api_key:
-            # إذا لم يكن هناك مفتاح Groq، استخدم Hugging Face API
-            return get_huggingface_response(messages)
-        
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        data = {
-            "model": "mixtral-8x7b-32768",
-            "messages": messages,
-            "temperature": 0.9,
-            "max_tokens": 1000
-        }
-        
-        response = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers=headers,
-            json=data,
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            return result["choices"][0]["message"]["content"]
-        else:
-            return get_huggingface_response(messages)
-            
-    except Exception as e:
-        return get_huggingface_response(messages)
-
-def get_huggingface_response(messages):
-    """
-    استخدام Hugging Face API المجاني
-    """
-    try:
-        api_key = os.getenv("HUGGINGFACE_API_KEY")
-        
-        if not api_key:
-            # إذا لم يكن هناك مفتاح، استخدم نموذج محلي
-            return generate_local_response(messages)
-        
-        # استخراج آخر رسالة من المستخدم
-        user_message = messages[-1]["content"]
-        
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        data = {
-            "inputs": user_message,
-            "parameters": {
-                "max_length": 500,
-                "temperature": 0.9
-            }
-        }
-        
-        response = requests.post(
-            "https://api-inference.huggingface.co/models/gpt2",
-            headers=headers,
-            json=data,
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            if isinstance(result, list) and len(result) > 0:
-                return result[0].get("generated_text", "")
-        
-        return generate_local_response(messages)
-        
-    except Exception as e:
-        return generate_local_response(messages)
-
-def generate_local_response(messages):
-    """
-    توليد رد ذكي محلي بدون الحاجة لـ API
-    """
+# دالة لتوليد ردود ذكية
+def generate_smart_response(messages):
+    """توليد رد ذكي بدون الحاجة لـ API"""
     user_message = messages[-1]["content"].lower()
     
     # قاموس الردود الذكية
-    responses = {
-        "كيف حالك": "حالي تمام التمام! 😊 أنا هنا لمساعدتك في أي شيء تحتاجه. كيف يمكنني مساعدتك اليوم؟",
-        "مرحبا": "مرحباً بك! 👋 أنا Rashed Ai، وكيل ذكي هنا لمساعدتك. ما الذي تود أن تفعله؟",
-        "احسب": self._calculate_response(user_message),
-        "اكتب": "بكل سرور! 📝 يمكنني كتابة قصص وشعر ومقالات. ما الموضوع الذي تريد أن أكتب عنه؟",
-        "علمني": "أنا هنا لتعليمك! 📚 يمكنني شرح أي موضوع بطريقة سهلة وممتعة. ما الموضوع الذي تود تعلمه؟",
-        "شكرا": "على الرحب والسعة! 😊 أنا هنا لمساعدتك دائماً.",
-        "وداعا": "وداعاً! 👋 كان من الممتع التحدث معك. إلى اللقاء! 😊",
+    smart_responses = {
+        "كيف حالك": "🌟 حالي رائع! أنا هنا لمساعدتك في أي شيء. كيف يمكنني خدمتك اليوم؟",
+        "مرحبا": "👋 مرحباً! أنا Rashed Ai، وكيل ذكي متقدم. سعيد بلقاءك! ما الذي تود فعله؟",
+        "شكرا": "😊 على الرحب والسعة! أنا هنا دائماً لمساعدتك.",
+        "وداعا": "👋 وداعاً! كان من الممتع التحدث معك. إلى اللقاء! 😊",
+        "احسب": "🧮 بكل سرور! يمكنني حل المسائل الحسابية. ما المسألة التي تريد حلها؟",
+        "اكتب": "✍️ بكل سرور! يمكنني كتابة قصص وشعر ومقالات. ما الموضوع الذي تريد أن أكتب عنه؟",
+        "علمني": "📚 أنا هنا لتعليمك! يمكنني شرح أي موضوع بطريقة سهلة وممتعة. ما الموضوع؟",
+        "من أنت": "🤖 أنا Rashed Ai، وكيل ذكي متقدم مدعوم بتقنيات الذكاء الاصطناعي. أنا هنا لمساعدتك في:\n• الإجابة على الأسئلة\n• كتابة المحتوى\n• شرح المواضيع\n• حل المسائل\n• والكثير من الأشياء الأخرى!",
+        "ما اسمك": "🤖 اسمي Rashed Ai! أنا منصة ذكية متقدمة تم تطويرها خصيصاً لمساعدتك.",
     }
     
     # البحث عن كلمات مفتاحية
-    for key, response in responses.items():
+    for key, response in smart_responses.items():
         if key in user_message:
             return response
     
     # رد عام ذكي
-    return f"شكراً على رسالتك: '{messages[-1]['content']}' ✨\n\nأنا Rashed Ai، وكيل ذكي متقدم. يمكنني:\n- الإجابة على الأسئلة\n- كتابة قصص وشعر\n- شرح المواضيع المعقدة\n- حل المسائل الحسابية\n- والكثير من الأشياء الأخرى!\n\nكيف يمكنني مساعدتك؟"
+    return f"""✨ شكراً على رسالتك!
 
-def _calculate_response(user_message):
-    """محاولة استخراج وحل مسألة حسابية"""
-    try:
-        # محاولة استخراج الأرقام
-        import re
-        numbers = re.findall(r'\d+', user_message)
-        if numbers:
-            return f"تم استخراج الأرقام: {', '.join(numbers)} ✨\n\nيمكنك أن تطلب مني حساب أي عملية حسابية بوضوح أكثر!"
-    except:
-        pass
-    return "بكل سرور! 🧮 أنا يمكنني حل المسائل الحسابية. ما المسألة التي تريد حلها؟"
+أنا Rashed Ai، وكيل ذكي متقدم. يمكنني مساعدتك في:
+
+🔹 الإجابة على أسئلتك
+🔹 كتابة قصص وشعر ومقالات
+🔹 شرح المواضيع المعقدة
+🔹 حل المسائل الحسابية
+🔹 تقديم النصائح والاستشارات
+🔹 والكثير من الأشياء الأخرى!
+
+كيف يمكنني مساعدتك بشكل أفضل؟"""
 
 # معالجة الإرسال
 if send_button and user_input:
@@ -335,7 +293,7 @@ if send_button and user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     
     # إظهار رسالة التحميل
-    with st.spinner("🤔 جاري المعالجة..."):
+    with st.spinner("⏳ جاري المعالجة..."):
         try:
             # تحضير الرسائل
             messages_for_api = [
@@ -343,21 +301,21 @@ if send_button and user_input:
                 for msg in st.session_state.messages
             ]
             
-            # محاولة الحصول على رد من API أو نموذج محلي
-            assistant_message = get_groq_response(messages_for_api)
+            # توليد رد ذكي
+            assistant_message = generate_smart_response(messages_for_api)
             
             st.session_state.messages.append({"role": "assistant", "content": assistant_message})
             st.rerun()
                     
         except Exception as e:
-            error_msg = f"❌ خطأ: {str(e)}"
+            error_msg = f"❌ حدث خطأ: {str(e)}"
             st.session_state.messages.append({"role": "assistant", "content": error_msg})
             st.error(error_msg)
 
 # الفوتر
 st.markdown("""
-<div style='text-align: center; margin-top: 40px; padding: 20px; color: #888; font-size: 0.9em;'>
+<div class="footer-section">
     <p>© 2026 Rashed Ai - جميع الحقوق محفوظة</p>
-    <p style='font-size: 0.8em; margin-top: 10px;'>منصة ذكية مجانية بدون تكاليف API</p>
+    <p style='margin-top: 8px;'>منصة ذكية مجانية بدون تكاليف API</p>
 </div>
 """, unsafe_allow_html=True)
